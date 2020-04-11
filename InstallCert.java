@@ -1,4 +1,35 @@
+/*
+ * Copyright 2006 Sun Microsystems, Inc.  All Rights Reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ *   - Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *
+ *   - Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution.
+ *
+ *   - Neither the name of Sun Microsystems nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 /**
+ * Originally from:
  * http://blogs.sun.com/andreas/resource/InstallCert.java
  * Use:
  * java InstallCert hostname
@@ -30,8 +61,7 @@ public class InstallCert {
             String p = (args.length == 1) ? "changeit" : args[1];
             passphrase = p.toCharArray();
         } else {
-            System.out.println("Usage: java InstallCert <host>[:port"+
-                               "[passphrase]");
+            System.out.println("Usage: java InstallCert <host>[:port] [passphrase]");
             return;
         }
 
@@ -53,11 +83,9 @@ public class InstallCert {
 
         SSLContext context = SSLContext.getInstance("TLS");
         TrustManagerFactory tmf =
-                TrustManagerFactory.getInstance(
-                                TrustManagerFactory.getDefaultAlgorithm());
+                TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         tmf.init(ks);
-        X509TrustManager defaultTrustManager = 
-                              (X509TrustManager) tmf.getTrustManagers()[0];
+        X509TrustManager defaultTrustManager = (X509TrustManager) tmf.getTrustManagers()[0];
         SavingTrustManager tm = new SavingTrustManager(defaultTrustManager);
         context.init(null, new TrustManager[]{tm}, null);
         SSLSocketFactory factory = context.getSocketFactory();
@@ -102,16 +130,15 @@ public class InstallCert {
             System.out.println();
         }
 
-        System.out.println("Enter certificate to add to trusted keystore or"+
-                           " 'q' to quit: [1]");
-        String line = reader.readLine().trim();
-        int k;
-        try {
-            k = (line.length() == 0) ? 0 : Integer.parseInt(line) - 1;
-        } catch (NumberFormatException e) {
-            System.out.println("KeyStore not changed");
-            return;
-        }
+        System.out.println("Enter certificate to add to trusted keystore or 'q' to quit: [1]");
+        //String line = reader.readLine().trim();
+        int k = 0;
+        // try {
+        //     k = (line.length() == 0) ? 0 : Integer.parseInt(line) - 1;
+        // } catch (NumberFormatException e) {
+        //     System.out.println("KeyStore not changed");
+        //     return;
+        // }
 
         X509Certificate cert = chain[k];
         String alias = host + "-" + (k + 1);
@@ -152,7 +179,14 @@ public class InstallCert {
         }
 
         public X509Certificate[] getAcceptedIssuers() {
-            throw new UnsupportedOperationException();
+	   
+	    /** 
+	     * This change has been done due to the following resolution advised for Java 1.7+
+		http://infposs.blogspot.kr/2013/06/installcert-and-java-7.html
+       	     **/ 
+	    
+	    return new X509Certificate[0];	
+            //throw new UnsupportedOperationException();
         }
 
         public void checkClientTrusted(X509Certificate[] chain, String authType)
@@ -166,5 +200,4 @@ public class InstallCert {
             tm.checkServerTrusted(chain, authType);
         }
     }
-
 }
